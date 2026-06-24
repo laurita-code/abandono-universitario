@@ -11,6 +11,7 @@ from sklearn.metrics import accuracy_score
 
 # REQUISITO 1: DEFINICIÓN DEL PROBLEMA
 st.title("Sistema de alerta temprana de abandono universitario")
+st.header("REQUISITO 1: DEFINICIÓN DEL PROBLEMA")
 
 st.markdown("""
 **¿Qué queremos predecir? :** El proyecto consiste en el desarrollo de un Sistema de alerta 
@@ -36,7 +37,9 @@ la decisión de abandonar la carrera.
 si el estudiante tiene beca, si debe matrícula, su edad al matricularse, la nota de
 admisión y el porcentaje de asignaturas que ha aprobado en su primer curso.
 """)
+
 # REQUISITO 2: IMPORTACIÓN DE DATOS (dos fuentes)
+st.header("REQUISITO 2: IMPORTACIÓN DE DATOS")
 datos = pd.read_csv("data/estudiantes.csv", sep=";")
 
 datos = datos.rename(columns={"Daytime/evening attendance\t": "Daytime/evening attendance"})
@@ -55,6 +58,8 @@ st.write("Número de columnas:", numero_columnas)
 st.write("Diccionario de carreras cargado del JSON:", carreras)
 
 # REQUISITO 3: TRANSFORMACIONES
+st.header("REQUISITO 3: TRANSFORMACIONES")
+
 st.header("2. Transformaciones de los datos")
 
 # 1) Rellenar posibles notas vacías con la media
@@ -87,3 +92,74 @@ st.write("La nota de admisión se ha pasado de la escala portuguesa (0-200) a la
 
 st.write("Se ha creado 'TasaAprobado' (porcentaje de asignaturas aprobadas sobre las matriculadas).")
 st.write(datos)
+
+# REQUISITO 4: MAPEO con .map()
+st.header("REQUISITO 4: MAPEO")
+
+datos["Turno"] = datos["Daytime/evening attendance"].map({1: "Diurno", 0: "Nocturno"})
+st.write(datos.head())
+
+datos["Carrera"] = datos["Course"].astype(str).map(carreras)
+
+st.write("Ejemplo del mapeo realizado (primeras filas):")
+st.dataframe(datos[["Daytime/evening attendance", "Turno", "Course", "Carrera"]].head())
+
+# REQUISITO 5: ORDENACIÓN
+st.header("REQUISITO 5: ORDENACIÓN")
+
+criterio = st.selectbox(
+    "Ordenar los estudiantes por:",
+    ["Nota de admisión (de mayor a menor)", "Edad (de mayor a menor)","Tasa de Aprobado primer año (de mayor a menor)"]
+)
+
+if criterio == "Nota de admisión (de mayor a menor)":
+    datos_ordenados = datos.sort_values(by="NotaAdmision", ascending=False)
+
+elif criterio == "Edad (de mayor a menor)":
+    datos_ordenados = datos.sort_values(by="Age at enrollment", ascending=False)
+
+else: 
+    datos_ordenados = datos.sort_values(by="TasaAprobado", ascending=False)
+
+st.write("Los 10 primeros estudiantes según el criterio elegido:")
+st.dataframe(datos_ordenados[["Carrera", "Turno", "Age at enrollment", "NotaAdmision", "TasaAprobado"]].head(10))
+
+# REQUISITO 6: VISUALIZACIÓN
+st.header("REQUISITO 6: VISUALIZACIÓN")
+
+figura1, ejes1 = plt.subplots()
+sns.histplot(datos["Age at enrollment"], bins=20, color="skyblue", ax=ejes1)
+ejes1.set_title("Distribución de la edad al matricularse")
+ejes1.set_xlabel("Edad")
+ejes1.set_ylabel("Número de estudiantes")
+st.pyplot(figura1)
+
+abandono_por_carrera = datos.groupby("Carrera")["Abandona"].mean()
+
+figura2, ejes2 = plt.subplots()
+ejes2.bar(abandono_por_carrera.index, abandono_por_carrera.values, color="orange")
+ejes2.set_title("Tasa de abandono por carrera")
+ejes2.set_xlabel("Carrera")
+ejes2.set_ylabel("Proporción que abandona")
+plt.xticks(rotation=45, ha="right")
+st.pyplot(figura2)
+
+abandono_por_beca = datos.groupby("Scholarship holder")["Abandona"].mean()
+
+figura3, ejes3 = plt.subplots()
+ejes3.bar(["Sin beca", "Con beca"], abandono_por_beca.values, color="green")
+ejes3.set_title("Tasa de abandono según beca")
+ejes3.set_xlabel("Situación de beca")
+ejes3.set_ylabel("Proporción que abandona")
+st.pyplot(figura3)
+
+columnas_candidatas = ["Daytime/evening attendance", "Scholarship holder", "Debtor",
+                       "Age at enrollment", "NotaAdmision", "TasaAprobado"]
+correlacion_abandono = datos[columnas_candidatas + ["Abandona"]].corr()["Abandona"].drop("Abandona")
+
+figura4, ejes4 = plt.subplots()
+ejes4.barh(correlacion_abandono.index, correlacion_abandono.values, color="purple")
+ejes4.set_title("Relación de cada variable con el abandono (correlación)")
+ejes4.set_xlabel("Coeficiente de correlación con 'Abandona'")
+st.pyplot(figura4)
+
