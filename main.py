@@ -125,7 +125,7 @@ st.write("Los 10 primeros estudiantes según el criterio elegido:")
 st.dataframe(datos_ordenados[["Carrera", "Turno", "Age at enrollment", "NotaAdmision", "TasaAprobado"]].head(10))
 
 # REQUISITO 6: VISUALIZACIÓN
-st.header("REQUISITO 6: VISUALIZACIÓN")
+
 
 figura1, ejes1 = plt.subplots()
 sns.histplot(datos["Age at enrollment"], bins=20, color="skyblue", ax=ejes1)
