@@ -13,21 +13,26 @@ from sklearn.metrics import accuracy_score
 st.title("Sistema de alerta temprana de abandono universitario")
 
 st.markdown("""
-**¿Qué queremos predecir?** Si un estudiante que YA ha cursado su primer año va a acabar
+**¿Qué queremos predecir? :** El proyecto consiste en el desarrollo de un Sistema de alerta 
+temprana para la prevención del abandono universitario. El objetivo principal es predecir de forma automatizada y 
+en base a los datos obtenidos, si un estudiante que ya ha cursado su primer año va a acabar
 abandonando la carrera o, por el contrario, va a graduarse.
 
-**¿Cuándo se predice? (importante):** NO en el momento de admitir al alumno, sino DESPUÉS
+**¿Cuándo se predice? :** NO en el momento de admitir al alumno, sino DESPUÉS
 de su primer curso. ¿Por qué en ese momento y no antes? Comprobamos con los datos que solo
 con el perfil de entrada (turno, beca, edad, nota de admisión) el modelo apenas acierta
 más que adivinando; en cambio, en cuanto se sabe CÓMO le ha ido el primer año (cuántas
 asignaturas aprueba), el acierto sube muchísimo. Es decir, lo que de verdad anticipa el
 abandono no es de dónde viene el alumno, sino su rendimiento en el primer curso.
 
-**¿Por qué es útil?** Es justo lo que hacen las universidades con los "sistemas de alerta
-temprana": tras el primer curso, detectar a quién está en riesgo para ofrecerle ayuda
-(tutorías, becas, apoyo) antes de que sea tarde.
+**¿Por qué es útil? :** Es justo lo que hacen las universidades con los "sistemas de alerta
+temprana". Al identificar a los estudiantes en situación de riesgo inmediatamente después de 
+concluir su primer año, la universidad dispone de tiempo suficiente para actuar. 
+Esto permite diseñar y aplicar estrategias de apoyo como tutorías de refuerzo, asignación de becas 
+específicas o programas de acompañamiento psicológico y académico antes de que el estudiante tome ç
+la decisión de abandonar la carrera. 
 
-**Objetivo concreto:** estimar el riesgo de abandono a partir del turno (diurno/nocturno),
+**Objetivo concreto:** Estimar el riesgo de abandono a partir del turno (mañana/tarde),
 si el estudiante tiene beca, si debe matrícula, su edad al matricularse, la nota de
 admisión y el porcentaje de asignaturas que ha aprobado en su primer curso.
 """)
