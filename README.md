@@ -4,8 +4,8 @@ Trabajo Final de la asignatura **Inteligencia Artificial y Estadística**.
 
 ## Objetivo del proyecto
 
-Construir una pequeña aplicación que estime si un estudiante universitario va a acabar
-**abandonando** la carrera o **graduándose**, a partir de unos pocos datos sencillos:
+Construir una aplicación que estime si un estudiante universitario va a acabar
+**abandonando** la carrera o **graduándose**, a partir de unos datos sencillos:
 el turno (diurno/nocturno), si tiene beca, si debe matrícula, su edad al matricularse,
 la nota de admisión y el porcentaje de asignaturas que ha aprobado en su primer curso.
 
@@ -16,8 +16,8 @@ aplicación imita un **sistema de alerta temprana**: una vez que un estudiante h
 su primer año, estima su riesgo de abandono para poder ofrecerle ayuda a tiempo
 (tutorías, becas, apoyo).
 
-> **Importante (cuándo se predice):** la predicción NO se hace en el momento de admitir
-> al alumno, sino DESPUÉS de su primer curso. Se comprobó con los datos que solo con el
+> **Es muy importante saber cuándo se predice:** La predicción no se hace en el momento de admitir
+> al alumno, sino después de su primer curso. Se comprobó con los datos que solo con el
 > perfil de entrada (turno, beca, edad, nota de admisión) el modelo apenas acierta más
 > que adivinando; lo que de verdad anticipa el abandono es el rendimiento del primer año.
 > Por eso la barra lateral describe a un alumno que **ya ha cursado un año**.
