@@ -124,43 +124,76 @@ st.dataframe(datos_ordenados[["Carrera", "Turno", "Age at enrollment", "NotaAdmi
 
 # REQUISITO 6: VISUALIZACIÓN
 
+st.header("5. Gráficos")
 
-figura1, ejes1 = plt.subplots()
-sns.histplot(datos["Age at enrollment"], bins=20, color="skyblue", ax=ejes1)
-ejes1.set_title("Distribución de la edad al matricularse")
-ejes1.set_xlabel("Edad")
-ejes1.set_ylabel("Número de estudiantes")
-st.pyplot(figura1)
+pestaña_edad, pestaña_carrera, pestaña_grupo, pestaña_corr = st.tabs(
+    ["Edad", "Abandono por carrera", "Comparar por grupo", "Correlación"]
+)
 
-abandono_por_carrera = datos.groupby("Carrera")["Abandona"].mean()
+# --- Pestaña 1: histograma de la edad, con un FILTRO que maneja el usuario ---
+with pestaña_edad:
 
-figura2, ejes2 = plt.subplots()
-ejes2.bar(abandono_por_carrera.index, abandono_por_carrera.values, color="orange")
-ejes2.set_title("Tasa de abandono por carrera")
-ejes2.set_xlabel("Carrera")
-ejes2.set_ylabel("Proporción que abandona")
-plt.xticks(rotation=45, ha="right")
-st.pyplot(figura2)
+    rango = st.slider("Elige el rango de edad a mostrar", 17, 60, (17, 40))
+    datos_edad = datos[(datos["Age at enrollment"] >= rango[0]) &
+                       (datos["Age at enrollment"] <= rango[1])]
+    figura1, ejes1 = plt.subplots()
+    sns.histplot(datos_edad["Age at enrollment"], bins=20, color="skyblue", ax=ejes1)
+    ejes1.set_title("Distribución de la edad al matricularse")
+    ejes1.set_xlabel("Edad")
+    ejes1.set_ylabel("Número de estudiantes")
+    st.pyplot(figura1)
 
-abandono_por_beca = datos.groupby("Scholarship holder")["Abandona"].mean()
+# --- Pestaña 2: tasa de abandono por carrera ---
+with pestaña_carrera:
+   
+    abandono_por_carrera = datos.groupby("Carrera")["Abandona"].mean()
+    figura2, ejes2 = plt.subplots()
+    ejes2.bar(abandono_por_carrera.index, abandono_por_carrera.values, color="orange")
+    ejes2.set_title("Tasa de abandono por carrera")
+    ejes2.set_xlabel("Carrera")
+    ejes2.set_ylabel("Proporción que abandona")
+    plt.xticks(rotation=45, ha="right")   # giramos los nombres para que se lean
+    st.pyplot(figura2)
 
-figura3, ejes3 = plt.subplots()
-ejes3.bar(["Sin beca", "Con beca"], abandono_por_beca.values, color="green")
-ejes3.set_title("Tasa de abandono según beca")
-ejes3.set_xlabel("Situación de beca")
-ejes3.set_ylabel("Proporción que abandona")
-st.pyplot(figura3)
+# --- Pestaña 3: el usuario ELIGE por qué variable comparar el abandono ---
+with pestaña_grupo:
+    
+    variable = st.selectbox("Comparar el abandono según:",
+                            ["Tiene beca", "Turno", "Debe matrícula"])
+    if variable == "Tiene beca":
+        grupo = datos.groupby("Scholarship holder")["Abandona"].mean()
+        etiquetas = ["Sin beca", "Con beca"]
+    elif variable == "Turno":
+        grupo = datos.groupby("Daytime/evening attendance")["Abandona"].mean()
+        etiquetas = ["Nocturno", "Diurno"]
+    else:
+        grupo = datos.groupby("Debtor")["Abandona"].mean()
+        etiquetas = ["No debe", "Debe"]
+    figura3, ejes3 = plt.subplots()
+    ejes3.bar(etiquetas, grupo.values, color="green")
+    ejes3.set_title("Tasa de abandono según " + variable)
+    ejes3.set_ylabel("Proporción que abandona")
+    st.pyplot(figura3)
 
-columnas_candidatas = ["Daytime/evening attendance", "Scholarship holder", "Debtor",
-                       "Age at enrollment", "NotaAdmision", "TasaAprobado"]
-correlacion_abandono = datos[columnas_candidatas + ["Abandona"]].corr()["Abandona"].drop("Abandona")
+# --- Pestaña 4: relación de cada variable candidata con el abandono (correlación) ---
+with pestaña_corr:
+   
+    columnas_candidatas = ["Daytime/evening attendance", "Scholarship holder", "Debtor",
+                           "Age at enrollment", "NotaAdmision", "TasaAprobado"]
+    correlacion_abandono = datos[columnas_candidatas + ["Abandona"]].corr()["Abandona"].drop("Abandona")
+    figura4, ejes4 = plt.subplots()
+    ejes4.barh(correlacion_abandono.index, correlacion_abandono.values, color="purple")
+    ejes4.set_title("Relación de cada variable con el abandono (correlación)")
+    ejes4.set_xlabel("Coeficiente de correlación con 'Abandona'")
+    st.pyplot(figura4)
 
-figura4, ejes4 = plt.subplots()
-ejes4.barh(correlacion_abandono.index, correlacion_abandono.values, color="purple")
-ejes4.set_title("Relación de cada variable con el abandono (correlación)")
-ejes4.set_xlabel("Coeficiente de correlación con 'Abandona'")
-st.pyplot(figura4)
-
+    st.info("""
+**¿Por qué hacemos esto?** Como decisión técnica, antes de elegir las variables del modelo, comprobamos con 
+estadística cuáles tienen relación real con el abandono, en vez de elegirlas a ojo.
+`.corr()` calcula el **coeficiente de correlación de Pearson** entre cada columna y `Abandona`  
+*(de -1 a 1: cuanto más lejos de 0, en cualquier signo, más fuerte es la relación).*
+""")
+    
 # REQUISITO 7: MODELIZACIÓN
 st.header("REQUISITO 7: MODELIZACIÓN")
 
