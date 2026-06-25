@@ -14,26 +14,26 @@ st.title("Sistema de alerta temprana de abandono universitario")
 st.header("DEFINICIÓN DEL PROBLEMA")
 
 st.markdown("""
-** - ¿Qué queremos predecir? :** El proyecto consiste en el desarrollo de un Sistema de alerta 
+**¿Qué queremos predecir? :** El proyecto consiste en el desarrollo de un Sistema de alerta 
 temprana para la prevención del abandono universitario. El objetivo principal es predecir de forma automatizada y 
 en base a los datos obtenidos, si un estudiante que ya ha cursado su primer año va a acabar
 abandonando la carrera o, por el contrario, va a graduarse.
 
-** - ¿Cuándo se predice? :** NO en el momento de admitir al alumno, sino DESPUÉS
+**¿Cuándo se predice? :** NO en el momento de admitir al alumno, sino DESPUÉS
 de su primer curso. ¿Por qué en ese momento y no antes? Comprobamos con los datos que solo
 con el perfil de entrada (turno, beca, edad, nota de admisión) el modelo apenas acierta
 más que adivinando; en cambio, en cuanto se sabe CÓMO le ha ido el primer año (cuántas
 asignaturas aprueba), el acierto sube muchísimo. Es decir, lo que de verdad anticipa el
 abandono no es de dónde viene el alumno, sino su rendimiento en el primer curso.
 
-** - ¿Por qué es útil? :** Es justo lo que hacen las universidades con los "sistemas de alerta
+**¿Por qué es útil? :** Es justo lo que hacen las universidades con los "sistemas de alerta
 temprana". Al identificar a los estudiantes en situación de riesgo inmediatamente después de 
 concluir su primer año, la universidad dispone de tiempo suficiente para actuar. 
 Esto permite diseñar y aplicar estrategias de apoyo como tutorías de refuerzo, asignación de becas 
 específicas o programas de acompañamiento psicológico y académico antes de que el estudiante tome ç
 la decisión de abandonar la carrera. 
 
-** - Objetivo concreto:** Estimar el riesgo de abandono a partir del turno (día/noche),
+**Objetivo concreto:** Estimar el riesgo de abandono a partir del turno (día/noche),
 si el estudiante tiene beca, si debe matrícula, su edad al matricularse, la nota de
 admisión y el porcentaje de asignaturas que ha aprobado en su primer curso.
 """)
@@ -161,3 +161,66 @@ ejes4.set_title("Relación de cada variable con el abandono (correlación)")
 ejes4.set_xlabel("Coeficiente de correlación con 'Abandona'")
 st.pyplot(figura4)
 
+# REQUISITO 7: MODELIZACIÓN
+st.header("REQUISITO 7: MODELIZACIÓN")
+
+columnas_entrada = ["Daytime/evening attendance", "Scholarship holder", "Debtor",
+                    "Age at enrollment", "NotaAdmision", "TasaAprobado"]
+X = datos[columnas_entrada]
+y = datos["Abandona"]
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+modelo = LogisticRegression(max_iter=1000)
+modelo.fit(X_train, y_train)
+
+predicciones = modelo.predict(X_test)
+acierto = accuracy_score(y_test, predicciones)
+
+st.write("El modelo ya está entrenado.")
+st.write("Acierto del modelo sobre los datos de prueba:", round(acierto * 100, 1), "%")
+
+# REQUISITO 8: COMUNICACIÓN (interactividad con el usuario)
+st.sidebar.title("Describe a un estudiante")
+st.sidebar.caption("Describe a un alumno que YA ha cursado su primer año.")
+
+turno_elegido = st.sidebar.selectbox("Turno", ["Diurno", "Nocturno"])
+beca_elegida = st.sidebar.selectbox("Tiene beca", ["No", "Sí"])
+deudor_elegido = st.sidebar.selectbox("Debe matrícula", ["No", "Sí"])
+edad_elegida = st.sidebar.slider("Edad al matricularse", 17, 60, 20)
+nota_elegida = st.sidebar.slider("Nota de admisión (sobre 14)", 0.0, 14.0, 9.0)
+tasa_elegida = st.sidebar.slider("Porcentaje de asignaturas aprobadas", 0, 100, 80)
+
+if turno_elegido == "Diurno":
+    turno_numero = 1
+else:
+    turno_numero = 0
+
+if beca_elegida == "Sí":
+    beca_numero = 1
+else:
+    beca_numero = 0
+
+if deudor_elegido == "Sí":
+    deudor_numero = 1
+else:
+    deudor_numero = 0
+
+
+    
+if st.sidebar.button("Predecir"):
+
+    estudiante_nuevo = pd.DataFrame([[turno_numero, beca_numero, deudor_numero, edad_elegida, nota_elegida, tasa_elegida]],
+                                    columns=columnas_entrada)
+
+    resultado = modelo.predict(estudiante_nuevo)
+
+    probabilidad = modelo.predict_proba(estudiante_nuevo)
+    probabilidad_abandonar = probabilidad[0][1]
+
+    if resultado[0] == 1:
+        st.error("Este estudiante PROBABLEMENTE ABANDONARÍA los estudios.")
+    else:
+        st.success("Este estudiante PROBABLEMENTE SE GRADUARÍA.")
+
+    st.write("Probabilidad de abandonar:", round(probabilidad_abandonar * 100, 1), "%")
