@@ -11,7 +11,7 @@ from sklearn.metrics import accuracy_score
 
 # REQUISITO 1: DEFINICIÓN DEL PROBLEMA
 st.title("Sistema de alerta temprana de abandono universitario")
-st.header("REQUISITO 1: DEFINICIÓN DEL PROBLEMA")
+st.header("1. DEFINICIÓN DEL PROBLEMA")
 
 st.markdown("""
 **¿Qué queremos predecir? :** El proyecto consiste en el desarrollo de un Sistema de alerta 
@@ -39,7 +39,7 @@ admisión y el porcentaje de asignaturas que ha aprobado en su primer curso.
 """)
 
 # REQUISITO 2: IMPORTACIÓN DE DATOS (dos fuentes)
-st.header("REQUISITO 2: IMPORTACIÓN DE DATOS")
+st.header("2. IMPORTACIÓN DE DATOS")
 datos = pd.read_csv("data/estudiantes.csv", sep=";")
 
 datos = datos.rename(columns={"Daytime/evening attendance\t": "Daytime/evening attendance"})
@@ -51,14 +51,14 @@ archivo_carreras.close()
 numero_filas = datos.shape[0]
 numero_columnas = datos.shape[1]
 
-st.header("1. Importación de datos")
+
 st.write("El archivo CSV se ha cargado correctamente.")
 st.write("Número de filas (estudiantes):", numero_filas)
 st.write("Número de columnas:", numero_columnas)
 st.write("Diccionario de carreras cargado del JSON:", carreras)
 
 # REQUISITO 3: TRANSFORMACIONES
-st.header("REQUISITO 3: TRANSFORMACIONES")
+st.header("3. TRANSFORMACIONES")
 
 # 1) Rellenar posibles notas vacías con la media
 nota_media = datos["Admission grade"].mean()
@@ -66,44 +66,46 @@ datos["Admission grade"] = datos["Admission grade"].fillna(nota_media)
 
 # 2) Reescalar la nota de 0-200 (escala portuguesa) a 0-14 (escala española)
 datos["NotaAdmision"] = datos["Admission grade"] / 200 * 14
+st.write("1. La nota de admisión se ha pasado de la escala portuguesa (0-200) a la española (0-14).")
 
 # 3) Filtrar casos atípicos de edad
 datos = datos[datos["Age at enrollment"] <= 60]
-st.write("Se han quitado los casos atípicos de edad (estudiantes de más de 60 años).")
-st.write("Filas restantes después de filtrar los menores de 60 años:", datos.shape[0])
+st.write("2. Se han quitado los casos atípicos de edad (estudiantes de más de 60 años): ")
+st.write(" Las filas restantes después de filtrar los menores de 60 años:", datos.shape[0])
 
 # 4) Quedarnos solo con casos cerrados y crear la columna objetivo
 datos = datos[datos["Target"].isin(["Dropout", "Graduate"])]
 datos["Abandona"] = datos["Target"].map({"Graduate": 0, "Dropout": 1})
-st.write("Nos quedamos solo con estudiantes que abandonaron o se graduaron (descartamos los aún matriculados).")
-st.write("Filas restantes después de filtrar los graduados y abandonos:", datos.shape[0])
+st.write("3. Nos quedamos solo con estudiantes que abandonaron o se graduaron (descartamos los aún matriculados).")
+st.write("Las filas restantes después de filtrar los graduados y abandonos:", datos.shape[0])
 
-# 5) Variable derivada: porcentaje de asignaturas aprobadas
+# 5) Variable derivada: porcentaje de asignaturas aprobadas en el primer curso
 aprobadas_total = datos["Curricular units 1st sem (approved)"] + datos["Curricular units 2nd sem (approved)"]
 matriculadas_total = datos["Curricular units 1st sem (enrolled)"] + datos["Curricular units 2nd sem (enrolled)"]
 
 datos["TasaAprobado"] = aprobadas_total / matriculadas_total * 100
 datos["TasaAprobado"] = datos["TasaAprobado"].fillna(0)
 
-st.write("La nota de admisión se ha pasado de la escala portuguesa (0-200) a la española (0-14).")
-
-
-st.write("Se ha creado 'TasaAprobado' (porcentaje de asignaturas aprobadas sobre las matriculadas).")
+st.write("4. Se ha creado 'TasaAprobado' (porcentaje de asignaturas aprobadas sobre las matriculadas en el primer curso).")
 st.write(datos)
 
 # REQUISITO 4: MAPEO con .map()
-st.header("REQUISITO 4: MAPEO")
+st.header("4. MAPEO")
 
+st.write("1. Se ha hecho un mapeo traduciendo el código de la variable (Daytime/evening attendance) a texto:  " \
+"1-Diurno, 0-Nocturno:")
+st.write("Ejemplo del mapeo realizado (5 primeras filas)")
 datos["Turno"] = datos["Daytime/evening attendance"].map({1: "Diurno", 0: "Nocturno"})
-st.write(datos.head())
+st.write(datos.head()) # Muestra las cinco primeras filas.
 
+st.write("2. Se ha hecho un mapeo traduciendo el código de la variable (course) a texto:")
 datos["Carrera"] = datos["Course"].astype(str).map(carreras)
 
-st.write("Ejemplo del mapeo realizado (primeras filas):")
-st.dataframe(datos[["Daytime/evening attendance", "Turno", "Course", "Carrera"]].head())
+st.write("Ejemplo del mapeo realizado:")
+st.dataframe(datos[["Daytime/evening attendance", "Turno", "Course", "Carrera"]])
 
 # REQUISITO 5: ORDENACIÓN
-st.header("REQUISITO 5: ORDENACIÓN")
+st.header("5. ORDENACIÓN")
 
 criterio = st.selectbox(
     "Ordenar los estudiantes por:",
@@ -111,10 +113,12 @@ criterio = st.selectbox(
 )
 
 if criterio == "Nota de admisión (de mayor a menor)":
-    datos_ordenados = datos.sort_values(by="NotaAdmision", ascending=False)
+    # Ordena por nota, y si coinciden, por la Tasa de Aprobado de mayor a menor
+    datos_ordenados = datos.sort_values(by=["NotaAdmision", "TasaAprobado"], ascending=[False, False])
 
 elif criterio == "Edad (de mayor a menor)":
-    datos_ordenados = datos.sort_values(by="Age at enrollment", ascending=False)
+    # Ordena por edad, y si coinciden, por la nota de admisión de mayor a menor
+    datos_ordenados = datos.sort_values(by=["Age at enrollment", "NotaAdmision"], ascending=[False, False])
 
 else: 
     datos_ordenados = datos.sort_values(by="TasaAprobado", ascending=False)
@@ -123,14 +127,13 @@ st.write("Los 10 primeros estudiantes según el criterio elegido:")
 st.dataframe(datos_ordenados[["Carrera", "Turno", "Age at enrollment", "NotaAdmision", "TasaAprobado"]].head(10))
 
 # REQUISITO 6: VISUALIZACIÓN
-
-st.header("5. Gráficos")
+st.header("6. VISUALIZACIÓN")
 
 pestaña_edad, pestaña_carrera, pestaña_grupo, pestaña_corr = st.tabs(
     ["Edad", "Abandono por carrera", "Comparar por grupo", "Correlación"]
 )
 
-# --- Pestaña 1: histograma de la edad, con un FILTRO que maneja el usuario ---
+# --- Pestaña 1: histograma de la edad, con un filtro que maneja el usuario ---
 with pestaña_edad:
 
     rango = st.slider("Elige el rango de edad a mostrar", 17, 60, (17, 40))
@@ -155,7 +158,7 @@ with pestaña_carrera:
     plt.xticks(rotation=45, ha="right")   # giramos los nombres para que se lean
     st.pyplot(figura2)
 
-# --- Pestaña 3: el usuario ELIGE por qué variable comparar el abandono ---
+# --- Pestaña 3: el usuario elige por qué variable comparar el abandono ---
 with pestaña_grupo:
     
     variable = st.selectbox("Comparar el abandono según:",
@@ -195,7 +198,7 @@ estadística cuáles tienen relación real con el abandono, en vez de elegirlas 
 """)
     
 # REQUISITO 7: MODELIZACIÓN
-st.header("REQUISITO 7: MODELIZACIÓN")
+st.header("7. MODELIZACIÓN")
 
 columnas_entrada = ["Daytime/evening attendance", "Scholarship holder", "Debtor",
                     "Age at enrollment", "NotaAdmision", "TasaAprobado"]
