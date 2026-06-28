@@ -11,7 +11,7 @@ from sklearn.metrics import accuracy_score
 
 # REQUISITO 1: DEFINICIÓN DEL PROBLEMA
 st.title("Sistema de alerta temprana de abandono universitario")
-st.header("DEFINICIÓN DEL PROBLEMA")
+st.header("REQUISITO 1: DEFINICIÓN DEL PROBLEMA")
 
 st.markdown("""
 **¿Qué queremos predecir? :** El proyecto consiste en el desarrollo de un Sistema de alerta 
@@ -19,10 +19,10 @@ temprana para la prevención del abandono universitario. El objetivo principal e
 en base a los datos obtenidos, si un estudiante que ya ha cursado su primer año va a acabar
 abandonando la carrera o, por el contrario, va a graduarse.
 
-**¿Cuándo se predice? :** NO en el momento de admitir al alumno, sino DESPUÉS
+**¿Cuándo se predice? :** No en el momento de admitir al alumno, sino después
 de su primer curso. ¿Por qué en ese momento y no antes? Comprobamos con los datos que solo
 con el perfil de entrada (turno, beca, edad, nota de admisión) el modelo apenas acierta
-más que adivinando; en cambio, en cuanto se sabe CÓMO le ha ido el primer año (cuántas
+más que adivinando; en cambio, en cuanto se sabe cómo le ha ido el primer año (cuántas
 asignaturas aprueba), el acierto sube muchísimo. Es decir, lo que de verdad anticipa el
 abandono no es de dónde viene el alumno, sino su rendimiento en el primer curso.
 
@@ -30,12 +30,12 @@ abandono no es de dónde viene el alumno, sino su rendimiento en el primer curso
 temprana". Al identificar a los estudiantes en situación de riesgo inmediatamente después de 
 concluir su primer año, la universidad dispone de tiempo suficiente para actuar. 
 Esto permite diseñar y aplicar estrategias de apoyo como tutorías de refuerzo, asignación de becas 
-específicas o programas de acompañamiento psicológico y académico antes de que el estudiante tome ç
+específicas o programas de acompañamiento psicológico y académico antes de que el estudiante tome
 la decisión de abandonar la carrera. 
 
-**Objetivo concreto:** Estimar el riesgo de abandono a partir del turno (día/noche),
+**Objetivo concreto:** Estimar el riesgo de abandono a partir del turno (diurno/nocturno),
 si el estudiante tiene beca, si debe matrícula, su edad al matricularse, la nota de
-admisión y el porcentaje de asignaturas que ha aprobado en su primer curso.
+admisión y el porcentaje de asignaturas que ha aprobado en su primer curso. 
 """)
 
 # REQUISITO 2: IMPORTACIÓN DE DATOS (dos fuentes)
@@ -257,3 +257,4 @@ if st.sidebar.button("Predecir"):
         st.success("Este estudiante PROBABLEMENTE SE GRADUARÍA.")
 
     st.write("Probabilidad de abandonar:", round(probabilidad_abandonar * 100, 1), "%")
+
